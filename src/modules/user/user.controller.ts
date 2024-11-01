@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { MongoError } from "mongodb";
-import { registerUser } from "./user.service";
+import { loginUser, registerUser } from "./user.service";
 
 export const register = async (req: Request, res: Response): Promise<any> => {
   try {
@@ -32,6 +32,30 @@ export const register = async (req: Request, res: Response): Promise<any> => {
         .json({ message: "Username or email already exists." });
     }
 
+    return res
+      .status(500)
+      .json({ message: "Server error.", error: (error as Error).message });
+  }
+};
+
+export const login = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required." });
+    }
+
+    const user = await loginUser(email, password);
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid email or password." });
+    }
+
+    return res.status(200).json({ message: "Login successful.", user });
+  } catch (error) {
     return res
       .status(500)
       .json({ message: "Server error.", error: (error as Error).message });

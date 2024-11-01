@@ -15,3 +15,22 @@ export const registerUser = async (
 
   return await newUser.save();
 };
+
+export const loginUser = async (
+  email: string,
+  password: string
+): Promise<Document | null> => {
+  const user = await UserModel.findOne({ email });
+
+  if (!user) {
+    return null;
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+
+  if (!isPasswordValid) {
+    return null;
+  }
+
+  return user;
+};
